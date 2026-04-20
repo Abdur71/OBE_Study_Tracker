@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OBE Study Tracker</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #f8fafc;
+      --muted: #cbd5e1;
+      --line: rgba(148, 163, 184, 0.22);
+      --panel: rgba(15, 23, 42, 0.76);
+      --panel-strong: rgba(2, 6, 23, 0.86);
+      --teal: #2dd4bf;
+    }
+    body {
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 5%, rgba(45, 212, 191, 0.28), transparent 30%),
+        radial-gradient(circle at 85% 10%, rgba(244, 63, 94, 0.18), transparent 26%),
+        linear-gradient(135deg, #020617 0%, #111827 48%, #042f2e 100%);
+      background-attachment: fixed;
+    }
+    button, input, select { border-radius: 8px !important; }
+    input {
+      background: rgba(15, 23, 42, 0.88) !important;
+      border-color: rgba(148, 163, 184, 0.35) !important;
+      color: #f8fafc !important;
+    }
+    input::placeholder { color: #94a3b8; }
+    table { color: #e2e8f0; }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(30, 41, 59, 0.62));
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.36);
+      backdrop-filter: blur(16px);
+    }
+    .bg-white { background: rgba(2, 6, 23, 0.62) !important; }
+    .bg-opacity-80 { background-color: rgba(2, 6, 23, 0.70) !important; }
+    .border-gray-100, .border-gray-200, .border-gray-300 { border-color: var(--line) !important; }
+    .text-gray-500, .text-gray-600, .text-gray-700 { color: var(--muted) !important; }
+    .text-teal-700 { color: #5eead4 !important; }
+    .text-green-800 { color: #bbf7d0 !important; }
+    .text-rose-800 { color: #fecdd3 !important; }
+    .bg-green-50 { background: rgba(22, 101, 52, 0.22) !important; }
+    .bg-rose-50 { background: rgba(159, 18, 57, 0.22) !important; }
+    .bg-gray-50, .bg-gray-100 { background: rgba(15, 23, 42, 0.62) !important; }
+    .border-green-200 { border-color: rgba(74, 222, 128, 0.35) !important; }
+    .border-rose-200 { border-color: rgba(251, 113, 133, 0.35) !important; }
+    .nav-item, .subject-row {
+      color: #e2e8f0;
+      background: rgba(15, 23, 42, 0.58);
+    }
+    .nav-item.active {
+      color: #042f2e;
+      background: linear-gradient(135deg, #5eead4, #a7f3d0);
+      border-color: rgba(94, 234, 212, 0.85) !important;
+    }
+    .subject-row.active {
+      border-color: #5eead4 !important;
+      background: rgba(20, 184, 166, 0.18);
+    }
+    .modal-backdrop {
+      background: rgba(2, 6, 23, 0.76);
+      backdrop-filter: blur(10px);
+    }
+    .btn-primary {
+      background: #0f766e !important;
+      color: #ffffff !important;
+      border: 1px solid #0f766e !important;
+    }
+    .btn-primary:hover {
+      background: #115e59 !important;
+      border-color: #115e59 !important;
+    }
+    .btn-indigo {
+      background: #4338ca !important;
+      color: #ffffff !important;
+      border: 1px solid #4338ca !important;
+    }
+    .btn-indigo:hover {
+      background: #3730a3 !important;
+      border-color: #3730a3 !important;
+    }
+    .btn-danger {
+      background: #be123c !important;
+      color: #ffffff !important;
+      border: 1px solid #be123c !important;
+    }
+    .btn-danger:hover {
+      background: #9f1239 !important;
+      border-color: #9f1239 !important;
+    }
+    .btn-dark {
+      background: #111827 !important;
+      color: #ffffff !important;
+      border: 1px solid #111827 !important;
+    }
+    .btn-dark:hover {
+      background: #000000 !important;
+      border-color: #000000 !important;
+    }
+    .btn-secondary {
+      background: rgba(15, 23, 42, 0.78) !important;
+      color: #f8fafc !important;
+      border: 1px solid rgba(148, 163, 184, 0.36) !important;
+    }
+    .btn-secondary:hover {
+      border-color: #5eead4 !important;
+      color: #5eead4 !important;
+    }
+    .table-action {
+      min-width: 54px;
+      padding: 7px 10px;
+      border-radius: 6px !important;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      transition: all 160ms ease;
+    }
+    .table-action-delete {
+      background: rgba(244, 63, 94, 0.10);
+      color: #fecdd3;
+      border: 1px solid rgba(244, 63, 94, 0.30);
+    }
+    .table-action-delete:hover {
+      background: rgba(244, 63, 94, 0.18);
+      border-color: rgba(251, 113, 133, 0.72);
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <section id="authScreen" class="min-h-screen flex items-center justify-center p-5">
+    <div class="card w-full max-w-md p-8 text-center">
+      <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=220&q=80" alt="Study desk" class="w-20 h-20 object-cover mx-auto" style="border-radius: 8px;" />
+      <h1 class="text-3xl font-bold mt-5">OBE Study Tracker</h1>
+      <p class="text-gray-500 mt-3">Sign in to keep your semesters, subjects, and marks connected to your account.</p>
+      <button id="googleLoginBtn" class="btn-primary w-full font-semibold px-5 py-3 mt-6 transition" type="button">
+        Continue with Google
+      </button>
+      <p id="authStatus" class="text-sm text-gray-500 mt-4">Supabase Google login required.</p>
+    </div>
+  </section>
+
+  <div id="appShell" class="hidden min-h-screen lg:flex">
+    <aside class="lg:w-72 bg-white border-r border-gray-200">
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center gap-3">
+          <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=160&q=80" alt="Study desk" class="w-12 h-12 object-cover" style="border-radius: 8px;" />
+          <div>
+            <h1 class="text-xl font-bold tracking-normal">OBE Study Tracker</h1>
+            <p class="text-sm text-gray-500">Internal marks, made clear.</p>
+          </div>
+        </div>
+      </div>
+      <div class="p-5">
+        <button id="openSemesterModalBtn" class="btn-primary w-full font-semibold px-4 py-3 transition">Add Semester</button>
+      </div>
+      <nav class="px-5 pb-6">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Semesters</h2>
+          <span id="semesterCount" class="text-xs text-gray-500">0</span>
+        </div>
+        <div id="semesterList" class="space-y-2"></div>
+      </nav>
+    </aside>
+
+    <main class="flex-1">
+      <header class="px-5 sm:px-8 py-6 border-b border-gray-200 bg-white bg-opacity-80">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-teal-700">Dashboard</p>
+            <h2 id="pageTitle" class="text-3xl font-bold mt-1">Choose a semester</h2>
+            <p id="pageSubtitle" class="text-gray-600 mt-2">Add semesters, subjects, CT marks, and target goals from one place.</p>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div id="userBadge" class="btn-secondary font-semibold px-4 py-3"></div>
+            <button id="headerSemesterBtn" class="btn-primary font-semibold px-4 py-3 transition">Add Semester</button>
+            <button id="openSubjectModalBtn" class="hidden btn-indigo font-semibold px-4 py-3 transition">Add Subject</button>
+            <button id="refreshBtn" class="btn-secondary font-semibold px-4 py-3 transition">Refresh Data</button>
+            <button id="logoutBtn" class="btn-secondary font-semibold px-4 py-3 transition" type="button">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="p-5 sm:p-8">
+        <div id="emptyState" class="card p-8 text-center">
+          <h3 class="text-2xl font-bold">Start with a semester</h3>
+          <p class="text-gray-600 mt-3 max-w-2xl mx-auto">Create a semester, open it, add subjects, then track CT, attendance, assignment, and final exam requirements.</p>
+          <div class="mt-6 flex flex-col sm:flex-row justify-center gap-3">
+            <button id="emptyAddSemesterBtn" class="btn-primary font-semibold px-5 py-3 transition">Add Semester</button>
+            <button id="emptyRefreshBtn" class="btn-secondary font-semibold px-5 py-3 transition">Refresh Data</button>
+          </div>
+        </div>
+
+        <div id="dashboardContent" class="hidden space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="card p-5">
+              <p class="text-sm font-semibold text-gray-500">Subjects</p>
+              <p id="subjectCount" class="text-3xl font-bold mt-2">0</p>
+            </div>
+            <div class="card p-5">
+              <p class="text-sm font-semibold text-gray-500">Selected Subject</p>
+              <p id="selectedSubjectLabel" class="text-xl font-bold mt-2">None</p>
+            </div>
+            <div class="card p-5">
+              <p class="text-sm font-semibold text-gray-500">Internal Total</p>
+              <p id="internalSummary" class="text-3xl font-bold mt-2">0 / 40</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            <section class="xl:col-span-4 card p-5">
+              <div class="flex items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-xl font-bold">Subjects</h3>
+                  <p class="text-sm text-gray-500">Open a subject to track marks.</p>
+                </div>
+                <button id="inlineSubjectBtn" class="btn-indigo font-semibold px-3 py-2 transition text-sm">Add</button>
+              </div>
+              <div id="subjectList" class="space-y-3"></div>
+            </section>
+            <section class="xl:col-span-8 space-y-6">
+              <div id="subjectEmpty" class="card p-8 text-center">
+                <h3 class="text-xl font-bold">No subject selected</h3>
+                <p class="text-gray-600 mt-2">Add or choose a subject to enter CT marks and calculate results.</p>
+              </div>
+              <div id="subjectPanel" class="hidden space-y-6">
+                <div class="card p-5">
+                  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                      <p id="subjectCode" class="text-sm font-semibold text-teal-700"></p>
+                      <h3 id="subjectName" class="text-2xl font-bold"></h3>
+                    </div>
+                    <button id="openCTModalBtn" class="btn-primary font-semibold px-4 py-3 transition">Add CT Mark</button>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div class="card p-5">
+                    <h3 class="text-xl font-bold mb-4">CT Marks</h3>
+                    <div class="overflow-x-auto">
+                      <table class="min-w-full text-left">
+                        <thead>
+                          <tr class="border-b border-gray-200 text-sm text-gray-500">
+                            <th class="py-3 pr-4">CT No</th>
+                            <th class="py-3 pr-4">Mark</th>
+                            <th class="py-3 pr-4">Status</th>
+                            <th class="py-3 pr-4 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody id="ctTable"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div class="card p-5">
+                    <h3 class="text-xl font-bold mb-4">Attendance & Assignment</h3>
+                    <form id="otherMarksForm" class="space-y-4">
+                      <label class="block">
+                        <span class="text-sm font-semibold text-gray-700">Attendance mark</span>
+                        <input id="attendanceInput" type="number" min="0" step="0.01" class="mt-2 w-full border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-600" placeholder="Example: 8" />
+                      </label>
+                      <label class="block">
+                        <span class="text-sm font-semibold text-gray-700">Assignment mark</span>
+                        <input id="assignmentInput" type="number" min="0" step="0.01" class="mt-2 w-full border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-600" placeholder="Example: 10" />
+                      </label>
+                      <button class="btn-dark w-full font-semibold px-4 py-3 transition" type="submit">Save Other Marks</button>
+                    </form>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div class="card p-5">
+                    <h3 class="text-xl font-bold">Internal Marks</h3>
+                    <p class="text-sm text-gray-500 mt-1">Best 3 CTs are used when more than 3 CTs exist.</p>
+                    <div class="mt-5 space-y-3 text-sm">
+                      <div class="flex justify-between"><span>CT average</span><strong id="ctAverageText">0</strong></div>
+                      <div class="flex justify-between"><span>Attendance</span><strong id="attendanceText">0</strong></div>
+                      <div class="flex justify-between"><span>Assignment</span><strong id="assignmentText">0</strong></div>
+                    </div>
+                    <div class="mt-5 p-4 bg-green-50 border border-green-200" style="border-radius: 8px;">
+                      <p class="text-sm font-semibold text-green-800">Total internal</p>
+                      <p id="internalTotalText" class="text-3xl font-bold text-green-800">0 / 40</p>
+                    </div>
+                  </div>
+                  <div class="card p-5">
+                    <h3 class="text-xl font-bold">A+ Final Requirement</h3>
+                    <p class="text-sm text-gray-500 mt-1">Continuous assessment is 40, final exam is 60, and A+ target is 80 / 100.</p>
+                    <div class="mt-5 p-4 bg-rose-50 border border-rose-200 text-rose-800 font-semibold" style="border-radius: 8px;">
+                      <p class="text-sm">Need in final exam</p>
+                      <p id="aPlusNeedText" class="text-3xl font-bold mt-1">80 / 60</p>
+                    </div>
+                    <div id="finalMessage" class="mt-4 p-4 bg-gray-50 border border-gray-200 text-gray-700 font-semibold" style="border-radius: 8px;">Select a subject to calculate how many final marks you need for A+.</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="semesterModal" class="fixed inset-0 hidden items-center justify-center p-5 modal-backdrop z-30">
+    <div class="card w-full max-w-md p-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold">Add Semester</h3>
+        <button class="closeModal text-gray-500 hover:text-white text-2xl leading-none" type="button">&times;</button>
+      </div>
+      <form id="semesterForm" class="mt-5 space-y-4">
+        <label class="block">
+          <span class="text-sm font-semibold text-gray-700">Semester name</span>
+          <input id="semesterNameInput" required class="mt-2 w-full border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-600" placeholder="Semester 3" />
+        </label>
+        <button class="btn-primary w-full font-semibold px-4 py-3 transition" type="submit">Save Semester</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="subjectModal" class="fixed inset-0 hidden items-center justify-center p-5 modal-backdrop z-30">
+    <div class="card w-full max-w-md p-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold">Add Subject</h3>
+        <button class="closeModal text-gray-500 hover:text-white text-2xl leading-none" type="button">&times;</button>
+      </div>
+      <form id="subjectForm" class="mt-5 space-y-4">
+        <label class="block">
+          <span class="text-sm font-semibold text-gray-700">Course code</span>
+          <input id="courseCodeInput" required class="mt-2 w-full border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="CSE-2201" />
+        </label>
+        <label class="block">
+          <span class="text-sm font-semibold text-gray-700">Course name</span>
+          <input id="courseNameInput" required class="mt-2 w-full border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Data Structures" />
+        </label>
+        <button class="btn-indigo w-full font-semibold px-4 py-3 transition" type="submit">Save Subject</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="ctModal" class="fixed inset-0 hidden items-center justify-center p-5 modal-backdrop z-30">
+    <div class="card w-full max-w-md p-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold">Add CT Mark</h3>
+        <button class="closeModal text-gray-500 hover:text-white text-2xl leading-none" type="button">&times;</button>
+      </div>
+      <form id="ctForm" class="mt-5 space-y-4">
+        <label class="block">
+          <span class="text-sm font-semibold text-gray-700">CT number</span>
+          <input id="ctNoInput" type="number" min="1" required class="mt-2 w-full border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-600" placeholder="1" />
+        </label>
+        <label class="block">
+          <span class="text-sm font-semibold text-gray-700">Mark</span>
+          <input id="ctMarkInput" type="number" min="0" step="0.01" required class="mt-2 w-full border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-600" placeholder="18" />
+        </label>
+        <button class="btn-primary w-full font-semibold px-4 py-3 transition" type="submit">Save CT</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-5 right-5 hidden bg-gray-900 text-white px-4 py-3 shadow-lg z-40" style="border-radius: 8px;"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Paste your Supabase project values here.
+    const SUPABASE_URL = "https://fmgelkqcznkffuubbdb.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpbWdlbGtxY3pua3RmdXViYmRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NzUxMjcsImV4cCI6MjA5MjI1MTEyN30.p9JAU1hCN0OZbd7Af5fIVNsPyERzPj1buCyD7Oayh4Q";
+
+    const isSupabaseConfigured = !SUPABASE_URL.includes("YOUR_") && !SUPABASE_ANON_KEY.includes("YOUR_");
+    const canUseSupabase = isSupabaseConfigured && Boolean(window.supabase);
+    // The CDN exposes window.supabase. Keep the app client under a different name to avoid a browser redeclare error.
+    const supabaseClient = canUseSupabase
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+
+    const state = {
+      semesters: [],
+      subjects: [],
+      ctMarks: [],
+      otherMarks: [],
+      currentSemesterId: null,
+      currentSubjectId: null,
+      currentInternal: 0,
+      currentUser: null
+    };
+
+    const els = {
+      authScreen: document.getElementById("authScreen"),
+      appShell: document.getElementById("appShell"),
+      googleLoginBtn: document.getElementById("googleLoginBtn"),
+      authStatus: document.getElementById("authStatus"),
+      userBadge: document.getElementById("userBadge"),
+      logoutBtn: document.getElementById("logoutBtn"),
+      semesterList: document.getElementById("semesterList"),
+      semesterCount: document.getElementById("semesterCount"),
+      subjectList: document.getElementById("subjectList"),
+      subjectCount: document.getElementById("subjectCount"),
+      selectedSubjectLabel: document.getElementById("selectedSubjectLabel"),
+      internalSummary: document.getElementById("internalSummary"),
+      emptyState: document.getElementById("emptyState"),
+      dashboardContent: document.getElementById("dashboardContent"),
+      subjectEmpty: document.getElementById("subjectEmpty"),
+      subjectPanel: document.getElementById("subjectPanel"),
+      pageTitle: document.getElementById("pageTitle"),
+      pageSubtitle: document.getElementById("pageSubtitle"),
+      subjectCode: document.getElementById("subjectCode"),
+      subjectName: document.getElementById("subjectName"),
+      ctTable: document.getElementById("ctTable"),
+      attendanceInput: document.getElementById("attendanceInput"),
+      assignmentInput: document.getElementById("assignmentInput"),
+      ctAverageText: document.getElementById("ctAverageText"),
+      attendanceText: document.getElementById("attendanceText"),
+      assignmentText: document.getElementById("assignmentText"),
+      internalTotalText: document.getElementById("internalTotalText"),
+      aPlusNeedText: document.getElementById("aPlusNeedText"),
+      finalMessage: document.getElementById("finalMessage"),
+      openSubjectModalBtn: document.getElementById("openSubjectModalBtn"),
+      toast: document.getElementById("toast")
+    };
+
+    const storageKey = "obe-study-tracker-local-db";
+
+    function newLocalId() {
+      return Date.now() + Math.floor(Math.random() * 10000);
+    }
+
+    function getLocalData() {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : { semesters: [], subjects: [], ct_marks: [], other_marks: [] };
+    }
+
+    function setLocalData(data) {
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    }
+
+    function getUserPayload(payload = {}) {
+      if (!canUseSupabase || !state.currentUser) return payload;
+      return { ...payload, user_id: state.currentUser.id };
+    }
+
+    async function dbSelect(table, filters = {}) {
+      if (canUseSupabase) {
+        let query = supabaseClient.from(table).select("*");
+        if (state.currentUser) query = query.eq("user_id", state.currentUser.id);
+        Object.keys(filters).forEach((key) => {
+          query = query.eq(key, filters[key]);
+        });
+        const { data, error } = await query;
+        if (error) throw error;
+        return data || [];
+      }
+
+      const data = getLocalData()[table] || [];
+      return data.filter((row) => Object.keys(filters).every((key) => row[key] === filters[key]));
+    }
+
+    async function dbInsert(table, payload) {
+      if (canUseSupabase) {
+        const { data, error } = await supabaseClient.from(table).insert(getUserPayload(payload)).select().single();
+        if (error) throw error;
+        return data;
+      }
+
+      const data = getLocalData();
+      const row = { id: newLocalId(), ...payload };
+      data[table].push(row);
+      setLocalData(data);
+      return row;
+    }
+
+    async function dbUpdate(table, id, payload) {
+      if (canUseSupabase) {
+        let query = supabaseClient
+          .from(table)
+          .update(payload)
+          .eq("id", id);
+        if (state.currentUser) query = query.eq("user_id", state.currentUser.id);
+        const { data, error } = await query.select().single();
+        if (error) throw error;
+        return data;
+      }
+
+      const data = getLocalData();
+      const index = data[table].findIndex((row) => String(row.id) === String(id));
+      if (index < 0) throw new Error("Row not found");
+      data[table][index] = { ...data[table][index], ...payload };
+      setLocalData(data);
+      return data[table][index];
+    }
+
+    async function dbDelete(table, id) {
+      if (canUseSupabase) {
+        let query = supabaseClient.from(table).delete().eq("id", id);
+        if (state.currentUser) query = query.eq("user_id", state.currentUser.id);
+        const { error } = await query;
+        if (error) throw error;
+        return;
+      }
+
+      const data = getLocalData();
+      data[table] = data[table].filter((row) => String(row.id) !== String(id));
+      setLocalData(data);
+    }
+
+    async function dbUpsertOtherMarks(payload) {
+      if (canUseSupabase) {
+        const existing = await dbSelect("other_marks", { subject_id: payload.subject_id });
+        if (existing.length) {
+          let query = supabaseClient
+            .from("other_marks")
+            .update(payload)
+            .eq("subject_id", payload.subject_id);
+          if (state.currentUser) query = query.eq("user_id", state.currentUser.id);
+          const { data, error } = await query.select().single();
+          if (error) throw error;
+          return data;
+        }
+        return dbInsert("other_marks", payload);
+      }
+
+      const data = getLocalData();
+      const index = data.other_marks.findIndex((row) => row.subject_id === payload.subject_id);
+      if (index >= 0) {
+        data.other_marks[index] = { ...data.other_marks[index], ...payload };
+        setLocalData(data);
+        return data.other_marks[index];
+      }
+
+      const row = { id: newLocalId(), ...payload };
+      data.other_marks.push(row);
+      setLocalData(data);
+      return row;
+    }
+
+    function formatNumber(value) {
+      const number = Number(value) || 0;
+      return Number.isInteger(number) ? String(number) : number.toFixed(2);
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.remove("hidden");
+      setTimeout(() => els.toast.classList.add("hidden"), 2600);
+    }
+
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      modal.style.display = "flex";
+    }
+
+    function closeModals() {
+      document.querySelectorAll(".modal-backdrop").forEach((modal) => {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        modal.style.display = "none";
+      });
+    }
+
+    function resetUserData() {
+      state.semesters = [];
+      state.subjects = [];
+      state.ctMarks = [];
+      state.otherMarks = [];
+      state.currentSemesterId = null;
+      state.currentSubjectId = null;
+      state.currentInternal = 0;
+    }
+
+    function showAuthScreen(message = "") {
+      els.authScreen.classList.remove("hidden");
+      els.appShell.classList.add("hidden");
+      if (message) els.authStatus.textContent = message;
+    }
+
+    function showAppScreen() {
+      els.authScreen.classList.add("hidden");
+      els.appShell.classList.remove("hidden");
+    }
+
+    function renderUserBadge() {
+      if (!state.currentUser) {
+        els.userBadge.textContent = "";
+        return;
+      }
+
+      const displayName = state.currentUser.user_metadata?.full_name || state.currentUser.email || "Signed in";
+      els.userBadge.textContent = displayName;
+    }
+
+    async function signInWithGoogle() {
+      if (!canUseSupabase) {
+        showAuthScreen("Add your Supabase URL and anon key first.");
+        return;
+      }
+
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.href.split("#")[0]
+        }
+      });
+      if (error) showToast(error.message || "Google login failed");
+    }
+
+    async function logout() {
+      if (!canUseSupabase) return;
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) {
+        showToast(error.message || "Logout failed");
+        return;
+      }
+
+      state.currentUser = null;
+      resetUserData();
+      renderAll();
+      showAuthScreen("Signed out. Continue with Google to return.");
+    }
+
+    async function initializeAuth() {
+      if (!canUseSupabase) {
+        showAuthScreen("Configure SUPABASE_URL and SUPABASE_ANON_KEY in index.html.");
+        return;
+      }
+
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) {
+        showAuthScreen(error.message || "Could not read login session.");
+        return;
+      }
+
+      state.currentUser = data.session?.user || null;
+      if (!state.currentUser) {
+        showAuthScreen("Continue with Google to open your tracker.");
+      } else {
+        showAppScreen();
+        renderUserBadge();
+        await loadData();
+      }
+
+      supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+        state.currentUser = session?.user || null;
+        if (state.currentUser) {
+          showAppScreen();
+          renderUserBadge();
+          await loadData();
+        } else {
+          resetUserData();
+          renderAll();
+          showAuthScreen("Continue with Google to open your tracker.");
+        }
+      });
+    }
+
+    async function loadData() {
+      try {
+        if (canUseSupabase && !state.currentUser) return;
+        state.semesters = await dbSelect("semesters");
+        state.subjects = await dbSelect("subjects");
+        state.ctMarks = await dbSelect("ct_marks");
+        state.otherMarks = await dbSelect("other_marks");
+
+        if (!state.currentSemesterId && state.semesters.length) {
+          state.currentSemesterId = state.semesters[0].id;
+        }
+
+        renderAll();
+      } catch (error) {
+        showToast(error.message || "Could not load data");
+      }
+    }
+
+    async function addSemester() {
+      const input = document.getElementById("semesterNameInput");
+      const name = input.value.trim();
+      if (!name) return;
+
+      try {
+        const semester = await dbInsert("semesters", { name });
+        state.currentSemesterId = semester.id;
+        state.currentSubjectId = null;
+        input.value = "";
+        closeModals();
+        await loadData();
+        showToast("Semester added");
+      } catch (error) {
+        showToast(error.message || "Could not add semester");
+      }
+    }
+
+    async function addSubject() {
+      const code = document.getElementById("courseCodeInput").value.trim();
+      const name = document.getElementById("courseNameInput").value.trim();
+      if (!code || !name || !state.currentSemesterId) return;
+
+      try {
+        const subject = await dbInsert("subjects", { semester_id: state.currentSemesterId, code, name });
+        state.currentSubjectId = subject.id;
+        document.getElementById("subjectForm").reset();
+        closeModals();
+        await loadData();
+        showToast("Subject added");
+      } catch (error) {
+        showToast(error.message || "Could not add subject");
+      }
+    }
+
+    async function addCT() {
+      const ctNo = Number(document.getElementById("ctNoInput").value);
+      const mark = Number(document.getElementById("ctMarkInput").value);
+      if (!state.currentSubjectId || !ctNo || Number.isNaN(mark)) return;
+
+      try {
+        await dbInsert("ct_marks", { subject_id: state.currentSubjectId, ct_no: ctNo, mark });
+        document.getElementById("ctForm").reset();
+        closeModals();
+        await loadData();
+        showToast("CT mark added");
+      } catch (error) {
+        showToast(error.message || "Could not add CT mark");
+      }
+    }
+
+    async function deleteCT(id) {
+      const confirmed = confirm("Delete this CT mark?");
+      if (!confirmed) return;
+
+      try {
+        await dbDelete("ct_marks", id);
+        await loadData();
+        showToast("CT mark deleted");
+      } catch (error) {
+        showToast(error.message || "Could not delete CT mark");
+      }
+    }
+
+    async function saveOtherMarks(event) {
+      event.preventDefault();
+      if (!state.currentSubjectId) return;
+
+      try {
+        await dbUpsertOtherMarks({
+          subject_id: state.currentSubjectId,
+          attendance: Number(els.attendanceInput.value) || 0,
+          assignment: Number(els.assignmentInput.value) || 0
+        });
+        await loadData();
+        showToast("Other marks saved");
+      } catch (error) {
+        showToast(error.message || "Could not save marks");
+      }
+    }
+
+    function getCurrentSemester() {
+      return state.semesters.find((semester) => semester.id === state.currentSemesterId);
+    }
+
+    function getCurrentSubject() {
+      return state.subjects.find((subject) => subject.id === state.currentSubjectId);
+    }
+
+    function getCurrentSubjectCTs() {
+      return state.ctMarks
+        .filter((mark) => mark.subject_id === state.currentSubjectId)
+        .sort((a, b) => Number(a.ct_no) - Number(b.ct_no));
+    }
+
+    function getCurrentOtherMarks() {
+      return state.otherMarks.find((mark) => mark.subject_id === state.currentSubjectId) || {
+        attendance: 0,
+        assignment: 0
+      };
+    }
+
+    function calculateInternal(useLiveInputs = false) {
+      const cts = getCurrentSubjectCTs();
+      const other = getCurrentOtherMarks();
+      const selectedCTs = [...cts].sort((a, b) => Number(b.mark) - Number(a.mark)).slice(0, 3);
+      const ctAverage = selectedCTs.length
+        ? selectedCTs.reduce((sum, row) => sum + Number(row.mark || 0), 0) / selectedCTs.length
+        : 0;
+      const attendance = useLiveInputs ? Number(els.attendanceInput.value) || 0 : Number(other.attendance) || 0;
+      const assignment = useLiveInputs ? Number(els.assignmentInput.value) || 0 : Number(other.assignment) || 0;
+      const total = Math.min(40, ctAverage + attendance + assignment);
+
+      state.currentInternal = total;
+      return { ctAverage, attendance, assignment, total, selectedCTs };
+    }
+
+    function calculateAPlusRequirement(event) {
+      if (event) event.preventDefault();
+
+      const finalMessage = document.getElementById("finalMessage");
+      const aPlusNeedText = document.getElementById("aPlusNeedText");
+      if (!finalMessage || !aPlusNeedText) return;
+
+      if (!state.currentSubjectId) {
+        aPlusNeedText.textContent = "80 / 60";
+        finalMessage.textContent = "Select a subject to calculate how many final marks you need for A+.";
+        return;
+      }
+
+      const liveInternal = calculateInternal(true).total;
+      const aPlusTarget = 80;
+      const finalFullMark = 60;
+      const requiredFinal = aPlusTarget - liveInternal;
+      const bestPossibleTotal = liveInternal + finalFullMark;
+
+      if (requiredFinal <= 0) {
+        aPlusNeedText.textContent = "0 / 60";
+        finalMessage.textContent = `Internal now: ${formatNumber(liveInternal)} / 40. You already reached the A+ target of ${aPlusTarget} / 100 before the final exam.`;
+      } else if (requiredFinal > finalFullMark) {
+        aPlusNeedText.textContent = `${formatNumber(requiredFinal)} / 60`;
+        finalMessage.textContent = `Internal now: ${formatNumber(liveInternal)} / 40. A+ needs ${formatNumber(requiredFinal)} / 60 in final, so A+ is not possible. Your best possible total is ${formatNumber(bestPossibleTotal)} / 100.`;
+      } else {
+        aPlusNeedText.textContent = `${formatNumber(requiredFinal)} / 60`;
+        finalMessage.textContent = `Internal now: ${formatNumber(liveInternal)} / 40. You need ${formatNumber(requiredFinal)} / 60 in the final exam to get A+ (${aPlusTarget} / 100).`;
+      }
+    }
+
+    function renderAll() {
+      renderSemesters();
+      renderDashboard();
+      renderSubjects();
+      renderSubjectPanel();
+    }
+
+    function renderSemesters() {
+      els.semesterCount.textContent = state.semesters.length;
+      els.semesterList.innerHTML = "";
+
+      if (!state.semesters.length) {
+        els.semesterList.innerHTML = '<p class="text-sm text-gray-500">No semesters yet.</p>';
+        return;
+      }
+
+      state.semesters.forEach((semester) => {
+        const button = document.createElement("button");
+        button.className = "nav-item w-full text-left px-4 py-3 font-semibold border border-gray-200 transition";
+        if (semester.id === state.currentSemesterId) button.classList.add("active");
+        button.textContent = semester.name;
+        button.onclick = () => {
+          state.currentSemesterId = semester.id;
+          state.currentSubjectId = null;
+          renderAll();
+        };
+        els.semesterList.appendChild(button);
+      });
+    }
+
+    function renderDashboard() {
+      const semester = getCurrentSemester();
+      const hasSemester = Boolean(semester);
+
+      els.emptyState.classList.toggle("hidden", hasSemester);
+      els.dashboardContent.classList.toggle("hidden", !hasSemester);
+      els.openSubjectModalBtn.classList.toggle("hidden", !hasSemester);
+
+      if (!hasSemester) {
+        els.pageTitle.textContent = "Choose a semester";
+        els.pageSubtitle.textContent = "Add semesters, subjects, CT marks, and target goals from one place.";
+        return;
+      }
+
+      const subjects = state.subjects.filter((subject) => subject.semester_id === semester.id);
+      els.pageTitle.textContent = semester.name;
+      els.pageSubtitle.textContent = "Track course performance and plan final exam targets.";
+      els.subjectCount.textContent = subjects.length;
+    }
+
+    function renderSubjects() {
+      const subjects = state.subjects.filter((subject) => subject.semester_id === state.currentSemesterId);
+      els.subjectList.innerHTML = "";
+
+      if (!subjects.length) {
+        els.subjectList.innerHTML = '<p class="text-sm text-gray-500">No subjects in this semester yet.</p>';
+        return;
+      }
+
+      subjects.forEach((subject) => {
+        const item = document.createElement("button");
+        item.className = "subject-row w-full text-left p-4 border border-gray-200 transition";
+        if (subject.id === state.currentSubjectId) item.classList.add("active");
+        item.innerHTML = `<span class="block text-sm font-semibold text-teal-700">${subject.code}</span><span class="block text-lg font-bold">${subject.name}</span>`;
+        item.onclick = () => {
+          state.currentSubjectId = subject.id;
+          renderSubjectPanel();
+          renderSubjects();
+        };
+        els.subjectList.appendChild(item);
+      });
+    }
+
+    function renderSubjectPanel() {
+      const subject = getCurrentSubject();
+      const hasSubject = Boolean(subject);
+
+      els.subjectEmpty.classList.toggle("hidden", hasSubject);
+      els.subjectPanel.classList.toggle("hidden", !hasSubject);
+      els.selectedSubjectLabel.textContent = hasSubject ? subject.code : "None";
+
+      if (!hasSubject) {
+        state.currentInternal = 0;
+        els.internalSummary.textContent = "0 / 40";
+        return;
+      }
+
+      els.subjectCode.textContent = subject.code;
+      els.subjectName.textContent = subject.name;
+      renderCTTable();
+      renderCalculations();
+    }
+
+    function renderCTTable() {
+      const cts = getCurrentSubjectCTs();
+      const { selectedCTs } = calculateInternal();
+      const selectedIds = new Set(selectedCTs.map((row) => row.id));
+      const lowest = cts.length ? cts.reduce((low, row) => Number(row.mark) < Number(low.mark) ? row : low, cts[0]) : null;
+
+      els.ctTable.innerHTML = "";
+      if (!cts.length) {
+        els.ctTable.innerHTML = '<tr><td colspan="4" class="py-4 text-gray-500">No CT marks added.</td></tr>';
+        return;
+      }
+
+      cts.forEach((row) => {
+        const tr = document.createElement("tr");
+        const isLowest = lowest && row.id === lowest.id;
+        const statusClass = isLowest ? "bg-rose-50 text-rose-800 border border-rose-200" : selectedIds.has(row.id) ? "bg-green-50 text-green-800 border border-green-200" : "bg-gray-100 text-gray-700 border border-gray-200";
+        const statusText = isLowest ? "Lowest" : selectedIds.has(row.id) ? "Used" : "Extra";
+        tr.className = "border-b border-gray-100";
+        tr.dataset.ctId = row.id;
+        tr.innerHTML = `
+          <td class="py-3 pr-4 font-semibold">CT ${row.ct_no}</td>
+          <td class="py-3 pr-4">${formatNumber(row.mark)}</td>
+          <td class="py-3 pr-4"><span class="inline-block px-2 py-1 text-xs font-semibold ${statusClass}" style="border-radius: 8px;">${statusText}</span></td>
+          <td class="py-3 pr-4">
+            <div class="flex items-center justify-end gap-2 whitespace-nowrap">
+              <button class="delete-ct-btn table-action table-action-delete" type="button" data-id="${row.id}" aria-label="Delete CT ${row.ct_no}">Delete</button>
+            </div>
+          </td>
+        `;
+        els.ctTable.appendChild(tr);
+      });
+
+      els.ctTable.querySelectorAll(".delete-ct-btn").forEach((button) => {
+        button.addEventListener("click", () => deleteCT(button.dataset.id));
+      });
+    }
+
+    function renderCalculations() {
+      const other = getCurrentOtherMarks();
+      const result = calculateInternal();
+
+      els.attendanceInput.value = other.attendance || "";
+      els.assignmentInput.value = other.assignment || "";
+      els.ctAverageText.textContent = formatNumber(result.ctAverage);
+      els.attendanceText.textContent = formatNumber(result.attendance);
+      els.assignmentText.textContent = formatNumber(result.assignment);
+      els.internalTotalText.textContent = `${formatNumber(result.total)} / 40`;
+      els.internalSummary.textContent = `${formatNumber(result.total)} / 40`;
+      calculateAPlusRequirement();
+    }
+
+    document.getElementById("semesterForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      addSemester();
+    });
+    document.getElementById("subjectForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      addSubject();
+    });
+    document.getElementById("ctForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      addCT();
+    });
+    document.getElementById("otherMarksForm").addEventListener("submit", saveOtherMarks);
+    els.attendanceInput.addEventListener("input", calculateAPlusRequirement);
+    els.assignmentInput.addEventListener("input", calculateAPlusRequirement);
+    els.googleLoginBtn.addEventListener("click", signInWithGoogle);
+    els.logoutBtn.addEventListener("click", logout);
+    document.getElementById("refreshBtn").addEventListener("click", loadData);
+    document.getElementById("emptyRefreshBtn").addEventListener("click", loadData);
+    document.getElementById("headerSemesterBtn").addEventListener("click", () => openModal("semesterModal"));
+    document.getElementById("openSemesterModalBtn").addEventListener("click", () => openModal("semesterModal"));
+    document.getElementById("emptyAddSemesterBtn").addEventListener("click", () => openModal("semesterModal"));
+    document.getElementById("openSubjectModalBtn").addEventListener("click", () => openModal("subjectModal"));
+    document.getElementById("inlineSubjectBtn").addEventListener("click", () => openModal("subjectModal"));
+    document.getElementById("openCTModalBtn").addEventListener("click", () => openModal("ctModal"));
+    document.querySelectorAll(".closeModal").forEach((button) => button.addEventListener("click", closeModals));
+    document.querySelectorAll(".modal-backdrop").forEach((modal) => {
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) closeModals();
+      });
+    });
+
+    initializeAuth();
+  </script>
+</body>
+</html>
