@@ -666,6 +666,23 @@
       }
     }
 
+    async function deleteSemester(id) {
+      const confirmed = confirm("Are you sure you want to delete this semester? All subjects and marks inside it will be lost.");
+      if (!confirmed) return;
+
+      try {
+        await dbDelete("semesters", id);
+        if (state.currentSemesterId === id) {
+          state.currentSemesterId = null;
+          state.currentSubjectId = null;
+        }
+        await loadData();
+        showToast("Semester deleted");
+      } catch (error) {
+        showToast(error.message || "Could not delete semester");
+      }
+    }
+
     async function addSubject() {
       const code = document.getElementById("courseCodeInput").value.trim();
       const name = document.getElementById("courseNameInput").value.trim();
@@ -813,16 +830,34 @@
       }
 
       state.semesters.forEach((semester) => {
-        const button = document.createElement("button");
-        button.className = "nav-item w-full text-left px-4 py-3 font-semibold border border-gray-200 transition";
-        if (semester.id === state.currentSemesterId) button.classList.add("active");
-        button.textContent = semester.name;
-        button.onclick = () => {
+        const container = document.createElement("div");
+        container.className = "nav-item w-full flex items-center justify-between px-4 py-3 font-semibold border border-gray-200 transition cursor-pointer";
+        container.style.borderRadius = "8px";
+        if (semester.id === state.currentSemesterId) container.classList.add("active");
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "flex-1 truncate";
+        nameSpan.textContent = semester.name;
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "text-black hover:text-gray-700 transition ml-2 text-2xl leading-none px-2";
+        deleteBtn.innerHTML = "&times;";
+        deleteBtn.style.background = "transparent";
+        deleteBtn.style.border = "none";
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          deleteSemester(semester.id);
+        };
+
+        container.onclick = () => {
           state.currentSemesterId = semester.id;
           state.currentSubjectId = null;
           renderAll();
         };
-        els.semesterList.appendChild(button);
+
+        container.appendChild(nameSpan);
+        container.appendChild(deleteBtn);
+        els.semesterList.appendChild(container);
       });
     }
 
