@@ -473,10 +473,20 @@
 
     async function dbDelete(table, id) {
       if (canUseSupabase) {
-        let query = supabaseClient.from(table).delete().eq("id", id);
+        // Explicitly cast ID to a number if it is numeric to avoid type mismatches in Supabase
+        const numericId = !isNaN(Number(id)) ? Number(id) : id;
+        let query = supabaseClient.from(table).delete().eq("id", numericId);
         if (state.currentUser) query = query.eq("user_id", state.currentUser.id);
-        const { error } = await query;
+        
+        // Add .select() to ensure we get a response back confirming the deletion
+        const { data, error } = await query.select();
         if (error) throw error;
+        
+        // If data is empty, the row wasn't deleted (possibly wrong ID or already deleted)
+        if (!data || data.length === 0) {
+           console.warn("Delete failed or affected 0 rows.");
+           throw new Error("Could not delete from database. It may have already been deleted.");
+        }
         return;
       }
 
