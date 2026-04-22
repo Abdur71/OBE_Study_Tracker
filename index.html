@@ -132,18 +132,6 @@
   </style>
 </head>
 <body class="min-h-screen">
-  <section id="authScreen" class="min-h-screen flex items-center justify-center p-5">
-    <div class="card w-full max-w-md p-8 text-center">
-      <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=220&q=80" alt="Study desk" class="w-20 h-20 object-cover mx-auto" style="border-radius: 8px;" />
-      <h1 class="text-3xl font-bold mt-5">OBE Study Tracker</h1>
-      <p class="text-gray-500 mt-3">Sign in to keep your semesters, subjects, and marks connected to your account.</p>
-      <button id="googleLoginBtn" class="btn-primary w-full font-semibold px-5 py-3 mt-6 transition" type="button">
-        Continue with Google
-      </button>
-      <p id="authStatus" class="text-sm text-gray-500 mt-4">Supabase Google login required.</p>
-    </div>
-  </section>
-
   <div id="appShell" class="hidden min-h-screen lg:flex">
     <aside class="lg:w-72 bg-white border-r border-gray-200">
       <div class="p-6 border-b border-gray-200">
@@ -383,10 +371,7 @@
     };
 
     const els = {
-      authScreen: document.getElementById("authScreen"),
       appShell: document.getElementById("appShell"),
-      googleLoginBtn: document.getElementById("googleLoginBtn"),
-      authStatus: document.getElementById("authStatus"),
       userBadge: document.getElementById("userBadge"),
       logoutBtn: document.getElementById("logoutBtn"),
       semesterList: document.getElementById("semesterList"),
@@ -568,13 +553,11 @@
     }
 
     function showAuthScreen(message = "") {
-      els.authScreen.classList.remove("hidden");
-      els.appShell.classList.add("hidden");
-      if (message) els.authStatus.textContent = message;
+      const msgParam = message ? `?msg=${encodeURIComponent(message)}` : "";
+      window.location.href = `login.html${msgParam}`;
     }
 
     function showAppScreen() {
-      els.authScreen.classList.add("hidden");
       els.appShell.classList.remove("hidden");
     }
 
@@ -586,21 +569,6 @@
 
       const displayName = state.currentUser.user_metadata?.full_name || state.currentUser.email || "Signed in";
       els.userBadge.textContent = displayName;
-    }
-
-    async function signInWithGoogle() {
-      if (!canUseSupabase) {
-        showAuthScreen("Add your Supabase URL and anon key first.");
-        return;
-      }
-
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/`
-        }
-      });
-      if (error) showToast(error.message || "Google login failed");
     }
 
     async function logout() {
@@ -977,7 +945,6 @@
     document.getElementById("otherMarksForm").addEventListener("submit", saveOtherMarks);
     els.attendanceInput.addEventListener("input", calculateAPlusRequirement);
     els.assignmentInput.addEventListener("input", calculateAPlusRequirement);
-    els.googleLoginBtn.addEventListener("click", signInWithGoogle);
     els.logoutBtn.addEventListener("click", logout);
     document.getElementById("refreshBtn").addEventListener("click", loadData);
     document.getElementById("emptyRefreshBtn").addEventListener("click", loadData);
